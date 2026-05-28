@@ -1,0 +1,38 @@
+[
+  {
+    "id": "book_xllsw7ld2",
+    "user_id": "local_2fhq0wibx",
+    "movie_id": "1",
+    "movie_title": "The Haunting Shadows",
+    "theater_name": "The Mausoleum IMAX",
+    "show_date": "2026-06-02",
+    "show_time": "7:15 PM",
+    "seats": [
+      "H-120",
+      "D-57",
+      "C-42"
+    ],
+    "total_price": 885,
+    "status": "cancelled",
+    "remaining_scans": 0,
+    "created_at": "2026-05-28T20:20:02.736Z"
+  },
+  {
+    "id": "book_7ntmhcw2i",
+    "user_id": "local_2fhq0wibx",
+    "movie_id": "1",
+    "movie_title": "The Haunting Shadows",
+    "theater_name": "The Mausoleum IMAX",
+    "show_date": "2026-06-02",
+    "show_time": "7:15 PM",
+    "seats": [
+      "H-124",
+      "D-60",
+      "B-28"
+    ],
+    "total_price": 885,
+    "status": "confirmed",
+    "remaining_scans": 0,
+    "created_at": "2026-05-28T20:21:55.179Z"
+  }
+]

@@ -1,7 +1,7 @@
 import { supabase } from './supabase';
 
 /**
- * Create a new booking in Supabase
+ * Create a new booking in Supabase or server-side fallback JSON file
  */
 export async function createBooking({ userId, movieId, movieTitle, theaterName, showDate, showTime, seats, totalPrice }) {
   const isLocalUser = userId && userId.startsWith('local_');
@@ -23,37 +23,29 @@ export async function createBooking({ userId, movieId, movieTitle, theaterName, 
         .select()
         .single();
 
-      if (error) {
-        if (error.message && (error.message.includes('fetch') || error.message.includes('Load failed') || error.message.includes('Network'))) {
-          throw new Error('Network error');
-        }
+      if (!error && data) {
         return { data, error };
       }
-      return { data, error };
     } catch (err) {
-      console.warn('Supabase createBooking failed. Falling back to local storage.', err);
+      console.warn('Supabase createBooking failed. Falling back to local server API.', err);
     }
   }
 
-  // Local storage fallback
-  const bookings = JSON.parse(localStorage.getItem('macabre_bookings') || '[]');
-  const newBooking = {
-    id: 'book_' + Math.random().toString(36).substr(2, 9),
-    user_id: userId,
-    movie_id: movieId,
-    movie_title: movieTitle,
-    theater_name: theaterName,
-    show_date: showDate,
-    show_time: showTime,
-    seats: seats,
-    total_price: totalPrice,
-    status: 'confirmed',
-    remaining_scans: seats.length,
-    created_at: new Date().toISOString()
-  };
-  bookings.push(newBooking);
-  localStorage.setItem('macabre_bookings', JSON.stringify(bookings));
-  return { data: newBooking, error: null };
+  // Local server API fallback
+  try {
+    const res = await fetch('/api/bookings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId, movieId, movieTitle, theaterName, showDate, showTime, seats, totalPrice })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      return { data, error: null };
+    }
+    return { data: null, error: { message: data.error || 'Failed to create booking' } };
+  } catch (err) {
+    return { data: null, error: { message: err.message } };
+  }
 }
 
 /**
@@ -69,24 +61,25 @@ export async function getUserBookings(userId) {
         .eq('user_id', userId)
         .order('created_at', { ascending: false });
 
-      if (error) {
-        if (error.message && (error.message.includes('fetch') || error.message.includes('Load failed') || error.message.includes('Network'))) {
-          throw new Error('Network error');
-        }
-        return { data: data || [], error };
+      if (!error && data) {
+        return { data, error };
       }
-      return { data: data || [], error };
     } catch (err) {
-      console.warn('Supabase getUserBookings failed. Falling back to local storage.', err);
+      console.warn('Supabase getUserBookings failed. Falling back to local server API.', err);
     }
   }
 
-  // Local storage fallback
-  const bookings = JSON.parse(localStorage.getItem('macabre_bookings') || '[]');
-  const userBookings = bookings
-    .filter(b => b.user_id === userId)
-    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-  return { data: userBookings, error: null };
+  // Local server API fallback
+  try {
+    const res = await fetch(`/api/bookings?userId=${userId}`);
+    const data = await res.json();
+    if (res.ok) {
+      return { data, error: null };
+    }
+    return { data: [], error: { message: data.error || 'Failed to get bookings' } };
+  } catch (err) {
+    return { data: [], error: { message: err.message } };
+  }
 }
 
 /**
@@ -102,24 +95,30 @@ export async function getBookingById(bookingId) {
         .eq('id', bookingId)
         .single();
 
-      if (error) {
-        if (error.message && (error.message.includes('fetch') || error.message.includes('Load failed') || error.message.includes('Network'))) {
-          throw new Error('Network error');
-        }
+      if (!error && data) {
         return { data, error };
       }
-      return { data, error };
     } catch (err) {
-      console.warn('Supabase getBookingById failed. Falling back to local storage.', err);
+      console.warn('Supabase getBookingById failed. Falling back to local server API.', err);
     }
   }
 
-  // Local storage fallback
-  const bookings = JSON.parse(localStorage.getItem('macabre_bookings') || '[]');
-  const booking = bookings.find(b => b.id === bookingId);
-  return { data: booking || null, error: booking ? null : { message: 'Booking not found' } };
+  // Local server API fallback
+  try {
+    const res = await fetch(`/api/bookings?bookingId=${bookingId}`);
+    const data = await res.json();
+    if (res.ok) {
+      return { data, error: null };
+    }
+    return { data: null, error: { message: data.error || 'Failed to get booking' } };
+  } catch (err) {
+    return { data: null, error: { message: err.message } };
+  }
 }
 
+/**
+ * Update remaining scans of a booking
+ */
 export async function updateBookingScans(bookingId, newCount) {
   const isLocalBooking = bookingId && bookingId.startsWith('book_');
   if (!isLocalBooking) {
@@ -130,23 +129,34 @@ export async function updateBookingScans(bookingId, newCount) {
         .eq('id', bookingId)
         .select()
         .single();
-      return { data, error };
+      if (!error && data) {
+        return { data, error };
+      }
     } catch (err) {
-      console.warn('Supabase update failed, using local fallback.', err);
+      console.warn('Supabase update failed, using local server API fallback.', err);
     }
   }
 
-  // Local storage fallback
-  const bookings = JSON.parse(localStorage.getItem('macabre_bookings') || '[]');
-  const index = bookings.findIndex(b => b.id === bookingId);
-  if (index !== -1) {
-    bookings[index].remaining_scans = newCount;
-    localStorage.setItem('macabre_bookings', JSON.stringify(bookings));
-    return { data: bookings[index], error: null };
+  // Local server API fallback
+  try {
+    const res = await fetch('/api/bookings', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: bookingId, remaining_scans: newCount })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      return { data, error: null };
+    }
+    return { data: null, error: { message: data.error || 'Failed to update scans' } };
+  } catch (err) {
+    return { data: null, error: { message: err.message } };
   }
-  return { data: null, error: { message: 'Booking not found' } };
 }
 
+/**
+ * Cancel a booking
+ */
 export async function cancelBooking(bookingId) {
   const isLocalBooking = bookingId && bookingId.startsWith('book_');
   if (!isLocalBooking) {
@@ -157,19 +167,27 @@ export async function cancelBooking(bookingId) {
         .eq('id', bookingId)
         .select()
         .single();
-      return { data, error };
+      if (!error && data) {
+        return { data, error };
+      }
     } catch (err) {
-      console.warn('Supabase cancel failed, using local fallback.', err);
+      console.warn('Supabase cancel failed, using local server API fallback.', err);
     }
   }
 
-  // Local storage fallback
-  const bookings = JSON.parse(localStorage.getItem('macabre_bookings') || '[]');
-  const index = bookings.findIndex(b => b.id === bookingId);
-  if (index !== -1) {
-    bookings[index].status = 'cancelled';
-    localStorage.setItem('macabre_bookings', JSON.stringify(bookings));
-    return { data: bookings[index], error: null };
+  // Local server API fallback
+  try {
+    const res = await fetch('/api/bookings', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: bookingId, status: 'cancelled' })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      return { data, error: null };
+    }
+    return { data: null, error: { message: data.error || 'Failed to cancel booking' } };
+  } catch (err) {
+    return { data: null, error: { message: err.message } };
   }
-  return { data: null, error: { message: 'Booking not found' } };
 }
