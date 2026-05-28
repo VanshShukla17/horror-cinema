@@ -1,0 +1,94 @@
+.form {
+  background-color: #1a0000;
+  border: 1px solid #4d0000;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.label {
+  display: block;
+  margin-bottom: 10px;
+  color: #ff0000;
+}
+
+.input {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 20px;
+  background-color: #2a0000;
+  border: 1px solid #4d0000;
+  color: #b3b3b3;
+  box-sizing: border-box;
+}
+
+.seatMap {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.seat {
+  width: 30px;
+  height: 30px;
+  background-color: #2a0000;
+  border: 1px solid #4d0000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  user-select: none;
+}
+
+.seat:hover:not(.occupied) {
+  background-color: #4d0000;
+}
+
+.selected {
+  background-color: #ff0000;
+  animation: pulse 1s infinite;
+}
+
+.occupied {
+  background-color: #4d0000;
+  cursor: not-allowed;
+}
+
+.bookingSummary {
+  background-color: #1a0000;
+  border: 1px solid #4d0000;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.bookButton {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  background-color: #4d0000;
+  color: #b3b3b3;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  transition: background-color 0.3s ease;
+  font-family: inherit;
+}
+
+.bookButton:hover {
+  background-color: #ff0000;
+}
+
+.confirmation {
+  background-color: #1a0000;
+  border: 1px solid #4d0000;
+  padding: 20px;
+  margin-top: 20px;
+  text-align: center;
+}
+
+@media (max-width: 768px) {
+  .seatMap {
+      grid-template-columns: repeat(4, 1fr);
+  }
+}

@@ -1,0 +1,13 @@
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  perspective: 1000px;
+  position: relative;
+  z-index: 1;
+}
+
+.flipped {
+  /* Used by framer-motion for 3D flip */
+}

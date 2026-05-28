@@ -1,0 +1,45 @@
+.featuredMovies {
+  padding: 50px 0;
+}
+
+.movieGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 30px;
+}
+
+.movieCard {
+  background-color: #1a0000;
+  border: 1px solid #4d0000;
+  padding: 20px;
+  text-align: center;
+  transition: transform 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.movieCard:hover {
+  transform: translateY(-10px);
+}
+
+.movieCard img {
+  width: 100%;
+  height: auto;
+  margin-bottom: 10px;
+  transition: filter 0.3s ease;
+}
+
+.movieCard:hover img {
+  filter: brightness(0.7) contrast(1.2) hue-rotate(20deg);
+}
+
+.movieCard h3 {
+  color: #ff0000;
+  margin-bottom: 10px;
+}
+
+@media (max-width: 768px) {
+  .movieGrid {
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+}
